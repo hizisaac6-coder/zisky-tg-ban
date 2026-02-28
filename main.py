@@ -774,24 +774,21 @@ class ZiskyTGBanTool:
         """Print Zisky banner"""
         os.system('clear' if os.name != 'nt' else 'cls')
         
-        banner = f"""
-{Fore.RED}╔══════════════════════════════════════════════════════════════════════════════╗
-{Fore.RED}║                                                                              ║
-{Fore.RED}║   ███████╗██╗███████╗██╗  ██╗██╗   ██╗    ████████╗ ██████╗     ██████╗ █████╗ ██╗   ██╗
-{Fore.YELLOW}║   ╚══███╔╝██║██╔════╝██║ ██╔╝██║   ██║    ╚══██╔══╝██╔═══██╗    ██╔══██╗██╔══██╗██║   ██║
-{Fore.GREEN}║     ███╔╝ ██║███████╗█████╔╝ ██║   ██║       ██║   ██║   ██║    ██████╔╝███████║██║   ██║
-{Fore.CYAN}║    ███╔╝  ██║╚════██║██╔═██╗ ██║   ██║       ██║   ██║   ██║    ██╔══██╗██╔══██║╚██╗ ██╔╝
-{Fore.MAGENTA}║   ███████╗██║███████║██║  ██╗╚██████╔╝       ██║   ╚██████╔╝    ██║  ██║██║  ██║ ╚████╔╝ 
-{Fore.RED}║   ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝        ╚═╝    ╚═════╝     ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  
-{Fore.RED}║                                                                              ║
-{Fore.YELLOW}║                    🔥 TELEGRAM MASS REPORTING TOOL v4.0 🔥                    ║
-{Fore.GREEN}║              📧 EMAIL: Proxies.txt • 🌐 WEB: https.txt • 🔄 DUAL FILES          ║
-{Fore.CYAN}║                    ⚡ 50+ PROFESSIONAL REPORT MESSAGES ⚡                         ║
-{Fore.RED}║                                                                              ║
-{Fore.RED}╚══════════════════════════════════════════════════════════════════════════════╝
-{Style.RESET_ALL}
-"""
-        print(banner)
+        print(f"{Fore.RED}╔══════════════════════════════════════════════════════════════════════════════╗")
+        print(f"{Fore.RED}║                                                                              ║")
+        print(f"{Fore.RED}║   ███████╗██╗███████╗██╗  ██╗██╗   ██╗    ████████╗ ██████╗     ██████╗ █████╗ ██╗   ██╗")
+        print(f"{Fore.YELLOW}║   ╚══███╔╝██║██╔════╝██║ ██╔╝██║   ██║    ╚══██╔══╝██╔═══██╗    ██╔══██╗██╔══██╗██║   ██║")
+        print(f"{Fore.GREEN}║     ███╔╝ ██║███████╗█████╔╝ ██║   ██║       ██║   ██║   ██║    ██████╔╝███████║██║   ██║")
+        print(f"{Fore.CYAN}║    ███╔╝  ██║╚════██║██╔═██╗ ██║   ██║       ██║   ██║   ██║    ██╔══██╗██╔══██║╚██╗ ██╔╝")
+        print(f"{Fore.MAGENTA}║   ███████╗██║███████║██║  ██╗╚██████╔╝       ██║   ╚██████╔╝    ██║  ██║██║  ██║ ╚████╔╝ ")
+        print(f"{Fore.RED}║   ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝        ╚═╝    ╚═════╝     ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ")
+        print(f"{Fore.RED}║                                                                              ║")
+        print(f"{Fore.YELLOW}║                    🔥 TELEGRAM MASS REPORTING TOOL v4.0 🔥                    ║")
+        print(f"{Fore.GREEN}║              📧 EMAIL: Proxies.txt • 🌐 WEB: https.txt • 🔄 DUAL FILES          ║")
+        print(f"{Fore.CYAN}║                    ⚡ 50+ PROFESSIONAL REPORT MESSAGES ⚡                         ║")
+        print(f"{Fore.RED}║                                                                              ║")
+        print(f"{Fore.RED}╚══════════════════════════════════════════════════════════════════════════════╝")
+        print()
         
         proxy_stats = self.proxy_manager.get_stats()
         https_stats = self.https_manager.get_stats()
@@ -1011,24 +1008,27 @@ def show_github_setup():
 
 {Fore.YELLOW}STEP 1: Create GitHub Repository{Style.RESET_ALL}
 {Fore.CYAN}────────────────────────────────────────────────────────────────
-1. Go to https://github.com and sign in
-2. Click the '+' icon in top right → "New repository"
-3. Repository name: {Fore.GREEN}zisky-tg-ban{Fore.CYAN}
-4. Description: Telegram Mass Reporting Tool with Proxy Support
-5. Choose: {Fore.GREEN}Public{Fore.CYAN}
-6. Check "Add a README file"
-7. Click "Create repository"
+1. Go to https://github.com/new
+2. Repository name: {Fore.GREEN}zisky-tg-ban{Fore.CYAN}
+3. Description: Telegram Mass Reporting Tool with Proxy Support
+4. Choose: {Fore.GREEN}Public{Fore.CYAN}
+5. Click "Create repository"
 
 {Fore.YELLOW}STEP 2: Upload Files{Style.RESET_ALL}
 {Fore.CYAN}────────────────────────────────────────────────────────────────
 1. In your new repository, click "Add file" → "Upload files"
-2. Upload this script as: {Fore.GREEN}zisky.py{Fore.CYAN}
-3. Create these empty files (click "Add file" → "Create new file"):
-   • {Fore.GREEN}Proxies.txt{Fore.CYAN} - Add your SOCKS5/HTTP proxies here
-   • {Fore.GREEN}https.txt{Fore.CYAN} - Add your HTTPS proxies here
-   • {Fore.GREEN}README.md{Fore.CYAN} - Copy the README content below
+2. Upload this script as: {Fore.GREEN}main.py{Fore.CYAN}
+3. Create these empty files:
+   • {Fore.GREEN}Proxies.txt{Fore.CYAN} - Add your SOCKS5/HTTP proxies
+   • {Fore.GREEN}https.txt{Fore.CYAN} - Add your HTTPS proxies
+   • {Fore.GREEN}README.md{Fore.CYAN} - Add documentation
 4. Commit changes
 
-{Fore.YELLOW}STEP 3: README.md Content{Style.RESET_ALL}
+{Fore.YELLOW}STEP 3: Clone in Termux{Style.RESET_ALL}
 {Fore.CYAN}────────────────────────────────────────────────────────────────
-Copy this to your README.md:
+```bash
+cd ~
+git clone https://github.com/hizisaac6-coder/zisky-tg-ban.git
+cd zisky-tg-ban
+pip install requests colorama pysocks urllib3
+python main.py
