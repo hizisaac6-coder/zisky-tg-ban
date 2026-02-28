@@ -1026,9 +1026,72 @@ def show_github_setup():
 
 {Fore.YELLOW}STEP 3: Clone in Termux{Style.RESET_ALL}
 {Fore.CYAN}────────────────────────────────────────────────────────────────
-```bash
 cd ~
 git clone https://github.com/hizisaac6-coder/zisky-tg-ban.git
 cd zisky-tg-ban
 pip install requests colorama pysocks urllib3
 python main.py
+
+{Fore.YELLOW}STEP 4: Update Later{Style.RESET_ALL}
+{Fore.CYAN}────────────────────────────────────────────────────────────────
+cd ~/zisky-tg-ban
+git pull origin main
+python main.py
+{Style.RESET_ALL}
+""")
+    
+    input(f"\n{Fore.YELLOW}[Press Enter to return to main menu...]")
+
+# ============================================================================
+# TERMUX SETUP
+# ============================================================================
+
+def setup_termux():
+    """Easy Termux setup"""
+    print(f"{Fore.CYAN}{'═'*70}")
+    print(f"{Fore.YELLOW}[🔧] ZISKY TG BAN - TERMUX SETUP")
+    print(f"{Fore.CYAN}{'═'*70}")
+    
+    print(f"\n{Fore.GREEN}[1] Updating Termux...")
+    os.system('pkg update -y && pkg upgrade -y')
+    
+    print(f"{Fore.GREEN}[2] Installing Python and dependencies...")
+    os.system('pkg install python git clang libffi openssl -y')
+    
+    print(f"{Fore.GREEN}[3] Installing Python packages...")
+    os.system('pip install requests colorama pysocks urllib3')
+    
+    print(f"{Fore.GREEN}[4] Creating proxy files...")
+    open("Proxies.txt", 'w').close()
+    open("https.txt", 'w').close()
+    
+    print(f"\n{Fore.GREEN}[✅] SETUP COMPLETE!")
+    print(f"{Fore.YELLOW}[📁] Created:")
+    print(f"  {Fore.CYAN}• Proxies.txt - Add your SOCKS5/HTTP proxies here")
+    print(f"  {Fore.CYAN}• https.txt - Add your HTTPS proxies here")
+    print(f"\n{Fore.YELLOW}[🚀] To run:")
+    print(f"  {Fore.CYAN}python main.py")
+    print(f"\n{Fore.YELLOW}[🐙] For GitHub setup, select option 4 in main menu")
+    
+    input(f"\n{Fore.YELLOW}[Press Enter to continue...]")
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) > 1:
+            if sys.argv[1] == 'setup':
+                setup_termux()
+            else:
+                print(f"{Fore.YELLOW}Usage: python main.py [setup]")
+        else:
+            tool = ZiskyTGBanTool()
+            tool.run()
+    except KeyboardInterrupt:
+        print(f"\n{Fore.YELLOW}[⚠️] Interrupted by user")
+    except Exception as e:
+        print(f"\n{Fore.RED}[💥] Error: {e}")
+        import traceback
+        traceback.print_exc()
