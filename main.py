@@ -200,54 +200,110 @@ class ProxyManager:
         self.failed_proxies = []
         self.current_index = 0
         self.lock = threading.Lock()
+        
+        # DEBUG: Show current working directory
+        import os
+        print(f"{Fore.CYAN}[🔍] Current directory: {os.getcwd()}")
+        print(f"{Fore.CYAN}[🔍] Looking for file: {filename}")
+        
+        # Check if file exists
+        if os.path.exists(filename):
+            print(f"{Fore.GREEN}[✅] File found: {filename}")
+            file_size = os.path.getsize(filename)
+            print(f"{Fore.CYAN}[📊] File size: {file_size} bytes")
+        else:
+            print(f"{Fore.RED}[❌] File NOT found: {filename}")
+            # Try to list files in current directory
+            print(f"{Fore.YELLOW}[📁] Files in current directory:")
+            for f in os.listdir('.'):
+                if 'proxy' in f.lower() or 'Proxies' in f:
+                    print(f"    - {f}")
+        
         self.load_proxies()
         if self.proxies:
             self.test_all_proxies()
+        else:
+            print(f"{Fore.RED}[❌] No proxies loaded! Check your Proxies.txt file.")
+            print(f"{Fore.YELLOW}[💡] Make sure the file has proxies in format: IP:PORT (one per line)")
     
     def load_proxies(self):
+        """Load proxies from file with DEBUG output"""
         try:
             if os.path.exists(self.filename):
                 with open(self.filename, 'r') as f:
-                    self.proxies = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-                print(f"{Fore.GREEN}[📁] Loaded {len(self.proxies)} proxies from {self.filename}")
+                    lines = f.readlines()
+                
+                print(f"{Fore.CYAN}[🔍] Read {len(lines)} lines from file")
+                
+                for line_num, line in enumerate(lines, 1):
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        # Validate proxy format (IP:PORT or DOMAIN:PORT)
+                        if re.match(r'^(\d{1,3}\.){3}\d{1,3}:\d+$', line) or re.match(r'^[a-zA-Z0-9.-]+:\d+$', line):
+                            self.proxies.append(line)
+                            print(f"{Fore.GREEN}[✅] Line {line_num}: {line} - VALID")
+                        else:
+                            print(f"{Fore.RED}[❌] Line {line_num}: {line} - INVALID FORMAT (skipping)")
+                
+                print(f"{Fore.GREEN}[📁] Loaded {len(self.proxies)} valid proxies from {self.filename}")
+                
+                # Show first 5 proxies loaded
+                if self.proxies:
+                    print(f"{Fore.CYAN}[🔍] First 5 proxies:")
+                    for i, p in enumerate(self.proxies[:5], 1):
+                        print(f"    {i}. {p}")
             else:
+                print(f"{Fore.RED}[❌] File {self.filename} does not exist!")
+                print(f"{Fore.YELLOW}[💡] Creating empty file...")
                 open(self.filename, 'w').close()
-                print(f"{Fore.YELLOW}[⚠️] Created {self.filename} - add SOCKS5 proxies")
                 self.proxies = []
         except Exception as e:
-            print(f"{Fore.RED}[❌] Error loading: {e}")
+            print(f"{Fore.RED}[❌] Error loading proxies: {e}")
+            import traceback
+            traceback.print_exc()
             self.proxies = []
     
     def test_single_proxy(self, proxy_str):
-        """Test a single SOCKS5 proxy"""
+        """Test a single SOCKS5 proxy with better error handling"""
         try:
-            parts = proxy_str.split(':')
-            if len(parts) < 2:
-                return False
-            host = parts[0]
-            port = int(parts[1])
+            # Parse proxy
+            host, port = proxy_str.split(':')
+            port = int(port)
+            
+            # Debug output for first few tests
+            if len(self.proxies) > 0 and self.proxies.index(proxy_str) < 3:
+                print(f"{Fore.YELLOW}[🔍] Testing: {host}:{port}")
             
             original_socket = socket.socket
             try:
                 socks.set_default_proxy(socks.SOCKS5, host, port)
                 socket.socket = socks.socksocket
                 
+                # Try to connect to Gmail SMTP
                 test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                test_sock.settimeout(8)
+                test_sock.settimeout(10)
                 test_sock.connect(('smtp.gmail.com', 587))
                 test_sock.close()
                 
                 return True
-            except:
+            except Exception as e:
+                if len(self.proxies) > 0 and self.proxies.index(proxy_str) < 3:
+                    print(f"{Fore.RED}[🔍] Test failed: {str(e)[:50]}")
                 return False
             finally:
                 socket.socket = original_socket
                 socks.set_default_proxy()
-        except:
+        except Exception as e:
+            if len(self.proxies) > 0 and proxy_str in self.proxies and self.proxies.index(proxy_str) < 3:
+                print(f"{Fore.RED}[🔍] Parse error: {e}")
             return False
     
     def test_all_proxies(self):
-        """Test all proxies on startup"""
+        """Test all proxies with progress bar"""
+        if not self.proxies:
+            print(f"{Fore.YELLOW}[⚠️] No proxies to test")
+            return
+        
         print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════╗")
         print(f"{Fore.CYAN}║     🔍 TESTING SOCKS5 PROXIES FOR EMAIL SENDING         ║")
         print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
@@ -256,20 +312,38 @@ class ProxyManager:
         failed = []
         total = len(self.proxies)
         
+        print(f"{Fore.CYAN}[🔍] Testing {total} proxies...{Style.RESET_ALL}")
+        
         for i, proxy in enumerate(self.proxies, 1):
-            print(f"\r{Fore.YELLOW}[↻] Testing {i}/{total}: {proxy:<20}", end='')
+            # Show progress every 10 proxies
+            if i % 10 == 0 or i == total:
+                print(f"\r{Fore.YELLOW}[↻] Progress: {i}/{total} ({int(i/total*100)}%)", end='')
+            
             if self.test_single_proxy(proxy):
                 working.append(proxy)
                 print(f"\r{Fore.GREEN}[✅] {i}/{total}: {proxy:<20} WORKING    ")
             else:
                 failed.append(proxy)
-                print(f"\r{Fore.RED}[❌] {i}/{total}: {proxy:<20} FAILED     ")
-            time.sleep(0.1)
+                if i % 10 == 0 or i == total:
+                    print(f"\r{Fore.RED}[❌] {i}/{total}: {proxy:<20} FAILED     ")
         
         self.working_proxies = working
         self.failed_proxies = failed
         
-        print(f"\n{Fore.GREEN}[📊] Results: {len(working)} working, {len(failed)} failed")
+        print(f"\n\n{Fore.GREEN}[📊] Results: {len(working)} working, {len(failed)} failed")
+        
+        if working:
+            print(f"{Fore.GREEN}[✅] Found {len(working)} working proxies!")
+            print(f"{Fore.CYAN}[🔍] First 5 working proxies:")
+            for i, p in enumerate(working[:5], 1):
+                print(f"    {i}. {p}")
+        else:
+            print(f"{Fore.RED}[❌] No working proxies found!")
+            print(f"{Fore.YELLOW}[💡] Possible issues:")
+            print(f"    1. Proxies are dead/expired")
+            print(f"    2. Proxies are HTTP, not SOCKS5")
+            print(f"    3. Network blocking SOCKS5 connections")
+            print(f"    4. Need to add proxies from a fresh source")
         
         # Save only working proxies
         self.save_proxies()
@@ -299,18 +373,28 @@ class ProxyManager:
             if proxy in self.working_proxies:
                 self.working_proxies.remove(proxy)
                 self.failed_proxies.append(proxy)
+                print(f"{Fore.RED}[❌] Proxy failed and removed: {proxy}")
     
     def get_stats(self):
-        return {'total': len(self.proxies), 'working': len(self.working_proxies), 'failed': len(self.failed_proxies)}
+        return {
+            'total': len(self.proxies), 
+            'working': len(self.working_proxies), 
+            'failed': len(self.failed_proxies)
+        }
     
     def parse_proxy(self, proxy_str):
         try:
-            parts = proxy_str.split(':')
-            if len(parts) >= 2:
-                host = parts[0]
-                port = int(parts[1])
-                return host, port, None, None
-            return None, None, None, None
+            if '@' in proxy_str:
+                auth, hostport = proxy_str.split('@')
+                if ':' in auth:
+                    username, password = auth.split(':', 1)
+                else:
+                    username, password = auth, ''
+                host, port = hostport.split(':')
+            else:
+                host, port = proxy_str.split(':')
+                username, password = None, None
+            return host, int(port), username, password
         except:
             return None, None, None, None
 
