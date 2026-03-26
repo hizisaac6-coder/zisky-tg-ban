@@ -2,8 +2,9 @@
 """
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                    🔥 ZISKY TG BAN TOOL v5.0 - BLACKHAT EDITION 🔥          ║
-║              📧 EMAIL: Proxies.txt • 🌐 WEB: https.txt • 🔄 DUAL PROXY       ║
+║              📧 EMAIL: Proxies.txt (SOCKS5) • 🌐 WEB: https.txt (HTTP)      ║
 ║                    ⚡ 80+ REPORT MESSAGES WITH ID SUPPORT ⚡                  ║
+║                    ⚡ AUTO-PROXY TESTING ON LOAD ⚡                          ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
 
@@ -48,7 +49,7 @@ TELEGRAM_ABUSE_EMAILS = [
     "abuse@telegram.org", "spam@telegram.org", "dmca@telegram.org",
     "support@telegram.org", "recover@telegram.org", "childabuse@telegram.org",
     "terrorism@telegram.org", "legal@telegram.org", "security@telegram.org",
-    "phishing@telegram.org", "sticker@telegram.org"
+    "phishing@telegram.org", "sticker@telegram.org", "report@telegram.org"
 ]
 
 # ============================================================================
@@ -56,7 +57,7 @@ TELEGRAM_ABUSE_EMAILS = [
 # ============================================================================
 
 USER_REPORT_MESSAGES = [
-    # Direct spam report with ID
+    # Direct spam report
     """I reported an account that was spamming and forwarding continuously. This was very annoying because he forwarded in both public and private groups. I was confused about Telegram. Why not freeze the account because it is clearly spamming and forwarding on a large scale and continuously? I ask that this be followed up quickly.
 
 Username: @{username}
@@ -82,7 +83,7 @@ Please conduct a full investigation and permanently ban this account.
 Thank you for protecting the Telegram community.
 Sincerely,""",
 
-    # CSAM/Terrorism report - HIGH PRIORITY
+    # CSAM/Terrorism - HIGH PRIORITY
     """Dear Telegram Trust and Safety Team,
 @{username} (Account ID: {user_id}) is a dangerous criminal account actively distributing REAL CSAM (child sexual abuse material), terrorism propaganda, violent gore, and illegal pornography.
 This violates Telegram TOS, DSA, international child protection laws, and criminal codes.
@@ -98,7 +99,7 @@ Sincerely,""",
     """SECURITY ALERT: @{username} (ID: {user_id}) is running a sophisticated phishing operation impersonating Telegram support. This account sends direct messages to users claiming account verification is required, directing them to fake login pages that steal credentials. I have documented over 30 victims who lost access to their accounts. This requires immediate action to prevent further account compromises.""",
 
     # Drug trafficking
-    """CRIMINAL REPORT: @{username} (ID: {user_id}) is operating a drug trafficking operation via Telegram. This account posts price lists for controlled substances including fentanyl, cocaine, and prescription opioids with cryptocurrency payment instructions. Multiple transactions have been documented. This is a criminal enterprise requiring immediate account termination and data preservation for law enforcement.""",
+    """CRIMINAL REPORT: @{username} (ID: {user_id}) is operating a drug trafficking operation via Telegram. This account posts price lists for controlled substances including fentanyl, cocaine, methamphetamine, and prescription opioids with cryptocurrency payment instructions. Multiple transactions have been documented. This is a criminal enterprise requiring immediate account termination and data preservation for law enforcement.""",
 
     # Doxxing and harassment
     """HARASSMENT REPORT: @{username} (ID: {user_id}) is engaged in systematic doxxing and harassment. This account has posted my personal information including home address, workplace, and family photos with threats of violence. I have filed police reports. This violates Telegram's policies and criminal laws. Please terminate this account immediately.""",
@@ -126,6 +127,12 @@ This is a high-priority emergency.""",
 
     # Grooming behavior
     """CHILD SAFETY REPORT: @{username} (ID: {user_id}) has been observed grooming underage users in teen-oriented groups. This account messages minors, requests explicit content, and attempts to arrange meetings. Multiple community members have reported this account. This requires immediate investigation and account termination with law enforcement notification.""",
+
+    # Spam forwarding complaint
+    """COMPLAINT: @{username} (ID: {user_id}) has been spamming and forwarding continuously in both public and private groups. This is extremely annoying and disruptive. The account clearly violates Telegram's spam policies. Please freeze this account immediately.""",
+
+    # Crypto scam
+    """CRYPTO SCAM REPORT: @{username} (ID: {user_id}) is running a fake crypto giveaway scam. The account promises to double any crypto sent to their wallet. Multiple victims have reported losing funds. This is a classic scam pattern. Please terminate.""",
 ]
 
 CHANNEL_REPORT_MESSAGES = [
@@ -150,6 +157,10 @@ Sincerely,""",
     """COPYRIGHT INFRINGEMENT: Channel @{username} (ID: {user_id}) distributes cracked software and pirated content valued at over $500,000. This includes Adobe Creative Suite, Microsoft Windows, and premium courses. Copyright holders have filed multiple complaints. Please terminate this channel for copyright violations.""",
 
     """TERRORISM REPORT: Channel @{username} (ID: {user_id}) is distributing terrorist propaganda, bomb-making instructions, and coordinating violent activities. This content poses an immediate threat to public safety and violates international counter-terrorism laws. URGENT termination required with full data preservation for authorities.""",
+
+    """CSAM DISTRIBUTION: Channel @{username} (ID: {user_id}) is actively distributing child sexual abuse material. This is a criminal offense and requires IMMEDIATE termination with law enforcement notification. Telegram has zero tolerance for this.""",
+
+    """DRUG MARKETPLACE: Channel @{username} (ID: {user_id}) is a drug marketplace selling fentanyl, cocaine, methamphetamine, and prescription opioids. This channel facilitates illegal drug transactions and should be terminated immediately.""",
 ]
 
 GROUP_REPORT_MESSAGES = [
@@ -171,10 +182,14 @@ Sincerely,""",
     """DRUG TRAFFICKING NETWORK: Group @{username} (ID: {user_id}) is a large-scale drug marketplace with over 5,000 members. The group facilitates transactions for fentanyl, cocaine, methamphetamine, and prescription opioids. Sellers provide ratings and reviews. This is a criminal enterprise requiring immediate termination and law enforcement notification.""",
 
     """HUMAN TRAFFICKING REPORT: Group @{username} (ID: {user_id}) is recruiting victims for forced labor and sexual exploitation. Members discuss transportation methods, false documentation, and evasion techniques. Multiple victims have been identified through this group. URGENT termination required.""",
+
+    """CSAM DISTRIBUTION NETWORK: Group @{username} (ID: {user_id}) is a network distributing child sexual abuse material. Members share links to illegal content and discuss methods to evade law enforcement. Immediate termination and law enforcement notification required.""",
+
+    """FRAUD NETWORK: Group @{username} (ID: {user_id}) is an organized fraud network running scams targeting vulnerable users. Members share stolen credit cards, hacked accounts, and fraud tutorials. Terminate immediately.""",
 ]
 
 # ============================================================================
-# PROXY MANAGER - FIXED SOCKS5 SUPPORT
+# PROXY MANAGER - WITH AUTO-TESTING
 # ============================================================================
 
 class ProxyManager:
@@ -182,9 +197,12 @@ class ProxyManager:
         self.filename = filename
         self.proxies = []
         self.working_proxies = []
+        self.failed_proxies = []
         self.current_index = 0
         self.lock = threading.Lock()
         self.load_proxies()
+        if self.proxies:
+            self.test_all_proxies()
     
     def load_proxies(self):
         try:
@@ -192,19 +210,77 @@ class ProxyManager:
                 with open(self.filename, 'r') as f:
                     self.proxies = [line.strip() for line in f if line.strip() and not line.startswith('#')]
                 print(f"{Fore.GREEN}[📁] Loaded {len(self.proxies)} proxies from {self.filename}")
-                self.working_proxies = self.proxies.copy()
             else:
                 open(self.filename, 'w').close()
+                print(f"{Fore.YELLOW}[⚠️] Created {self.filename} - add SOCKS5 proxies")
                 self.proxies = []
-                self.working_proxies = []
         except Exception as e:
-            print(f"{Fore.RED}[❌] Error loading proxies: {e}")
+            print(f"{Fore.RED}[❌] Error loading: {e}")
+            self.proxies = []
+    
+    def test_single_proxy(self, proxy_str):
+        """Test a single SOCKS5 proxy"""
+        try:
+            parts = proxy_str.split(':')
+            if len(parts) < 2:
+                return False
+            host = parts[0]
+            port = int(parts[1])
+            
+            original_socket = socket.socket
+            try:
+                socks.set_default_proxy(socks.SOCKS5, host, port)
+                socket.socket = socks.socksocket
+                
+                test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                test_sock.settimeout(8)
+                test_sock.connect(('smtp.gmail.com', 587))
+                test_sock.close()
+                
+                return True
+            except:
+                return False
+            finally:
+                socket.socket = original_socket
+                socks.set_default_proxy()
+        except:
+            return False
+    
+    def test_all_proxies(self):
+        """Test all proxies on startup"""
+        print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════╗")
+        print(f"{Fore.CYAN}║     🔍 TESTING SOCKS5 PROXIES FOR EMAIL SENDING         ║")
+        print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
+        
+        working = []
+        failed = []
+        total = len(self.proxies)
+        
+        for i, proxy in enumerate(self.proxies, 1):
+            print(f"\r{Fore.YELLOW}[↻] Testing {i}/{total}: {proxy:<20}", end='')
+            if self.test_single_proxy(proxy):
+                working.append(proxy)
+                print(f"\r{Fore.GREEN}[✅] {i}/{total}: {proxy:<20} WORKING    ")
+            else:
+                failed.append(proxy)
+                print(f"\r{Fore.RED}[❌] {i}/{total}: {proxy:<20} FAILED     ")
+            time.sleep(0.1)
+        
+        self.working_proxies = working
+        self.failed_proxies = failed
+        
+        print(f"\n{Fore.GREEN}[📊] Results: {len(working)} working, {len(failed)} failed")
+        
+        # Save only working proxies
+        self.save_proxies()
     
     def save_proxies(self):
+        """Save working proxies back to file"""
         try:
             with open(self.filename, 'w') as f:
                 for proxy in self.working_proxies:
                     f.write(f"{proxy}\n")
+            print(f"{Fore.GREEN}[💾] Saved {len(self.working_proxies)} working proxies to {self.filename}")
         except Exception as e:
             print(f"{Fore.RED}[❌] Error saving: {e}")
     
@@ -222,26 +298,25 @@ class ProxyManager:
         with self.lock:
             if proxy in self.working_proxies:
                 self.working_proxies.remove(proxy)
+                self.failed_proxies.append(proxy)
     
     def get_stats(self):
-        return {'total': len(self.proxies), 'working': len(self.working_proxies)}
+        return {'total': len(self.proxies), 'working': len(self.working_proxies), 'failed': len(self.failed_proxies)}
     
     def parse_proxy(self, proxy_str):
-        """Parse proxy for SOCKS5 - supports IP:PORT and USER:PASS@IP:PORT"""
         try:
-            if '@' in proxy_str:
-                auth, hostport = proxy_str.split('@')
-                if ':' in auth:
-                    username, password = auth.split(':', 1)
-                else:
-                    username, password = auth, ''
-                host, port = hostport.split(':')
-            else:
-                host, port = proxy_str.split(':')
-                username, password = None, None
-            return host, int(port), username, password
+            parts = proxy_str.split(':')
+            if len(parts) >= 2:
+                host = parts[0]
+                port = int(parts[1])
+                return host, port, None, None
+            return None, None, None, None
         except:
             return None, None, None, None
+
+# ============================================================================
+# HTTPS PROXY MANAGER - FOR WEB
+# ============================================================================
 
 class HttpsProxyManager:
     def __init__(self, filename="https.txt"):
@@ -257,10 +332,11 @@ class HttpsProxyManager:
             if os.path.exists(self.filename):
                 with open(self.filename, 'r') as f:
                     self.proxies = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-                print(f"{Fore.GREEN}[🔒] Loaded {len(self.proxies)} HTTPS proxies from {self.filename}")
                 self.working_proxies = self.proxies.copy()
+                print(f"{Fore.GREEN}[🔒] Loaded {len(self.proxies)} HTTPS proxies from {self.filename}")
             else:
                 open(self.filename, 'w').close()
+                print(f"{Fore.YELLOW}[⚠️] Created {self.filename} - add HTTP/HTTPS proxies")
         except Exception as e:
             print(f"{Fore.RED}[❌] Error: {e}")
     
@@ -285,9 +361,12 @@ class HttpsProxyManager:
                 return {'http': f'http://{proxy_str}', 'https': f'http://{proxy_str}'}
         except:
             return None
+    
+    def get_stats(self):
+        return {'total': len(self.proxies), 'working': len(self.working_proxies)}
 
 # ============================================================================
-# EMAIL BOMBER - WITH PROXY + DIRECT OPTIONS
+# EMAIL BOMBER - WITH PROXY SUPPORT
 # ============================================================================
 
 class EmailBomber:
@@ -296,14 +375,14 @@ class EmailBomber:
         self.email_index = 0
     
     def send_via_proxy(self, email_config, to_emails, subject, body, proxy_str):
-        host, port, username, password = self.proxy_manager.parse_proxy(proxy_str)
+        host, port, _, _ = self.proxy_manager.parse_proxy(proxy_str)
         if not host:
             return False, "Invalid proxy"
         
         original_socket = socket.socket
         
         try:
-            socks.set_default_proxy(socks.SOCKS5, host, port, username=username, password=password)
+            socks.set_default_proxy(socks.SOCKS5, host, port)
             socket.socket = socks.socksocket
             
             msg = MIMEMultipart('alternative')
@@ -346,8 +425,11 @@ class EmailBomber:
     
     def attack(self, target, user_id, report_type, messages_list, max_reports=None, use_proxy=True):
         print(f"\n{Fore.RED}{'═'*70}")
-        print(f"{Fore.YELLOW}[📧] EMAIL ATTACK - {'WITH PROXIES' if use_proxy else 'DIRECT'}")
+        print(f"{Fore.YELLOW}[📧] EMAIL ATTACK - {'WITH SOCKS5 PROXIES' if use_proxy else 'DIRECT'}")
         print(f"{Fore.RED}{'═'*70}")
+        
+        if use_proxy:
+            print(f"{Fore.CYAN}[🔌] Available SOCKS5 proxies: {self.proxy_manager.get_stats()['working']}")
         
         sent, failed, email_idx = 0, 0, 0
         
@@ -384,17 +466,19 @@ class EmailBomber:
                     failed += 1
                     print(f"{Fore.RED}[❌] Failed: {msg[:60]}")
             
-            time.sleep(random.uniform(5, 12))
+            delay = random.uniform(5, 12)
+            print(f"{Fore.YELLOW}[⏱️] Waiting {delay:.1f}s...")
+            time.sleep(delay)
             
             if sent % 4 == 0 and sent > 0:
-                print(f"{Fore.YELLOW}[⏸️] Rate limit pause - 4 emails sent, waiting 15s...")
-                time.sleep(15)
+                print(f"{Fore.YELLOW}[⏸️] Rate limit pause - 4 emails sent, waiting 20s...")
+                time.sleep(20)
         
         print(f"\n{Fore.GREEN}[📊] Email reports: {sent} sent, {failed} failed")
         return sent, failed
 
 # ============================================================================
-# WEB REPORTER - FIXED API ENDPOINTS
+# WEB REPORTER
 # ============================================================================
 
 class WebReporter:
@@ -412,6 +496,7 @@ class WebReporter:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/119.0.0.0",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
         ]
     
     def send_report(self, target, user_id, report_type, message):
@@ -443,8 +528,11 @@ class WebReporter:
     
     def attack(self, target, user_id, report_type, messages_list, count=30):
         print(f"\n{Fore.BLUE}{'═'*70}")
-        print(f"{Fore.YELLOW}[🌐] WEB ATTACK - Using https.txt proxies")
+        print(f"{Fore.YELLOW}[🌐] WEB ATTACK - Using HTTP/HTTPS proxies")
         print(f"{Fore.BLUE}{'═'*70}")
+        
+        stats = self.https_manager.get_stats()
+        print(f"{Fore.CYAN}[🔒] Available proxies: {stats['working']}")
         
         successful, failed = 0, 0
         
@@ -452,22 +540,24 @@ class WebReporter:
             report_msg = random.choice(messages_list)
             body = report_msg.format(username=target, user_id=user_id)
             
+            print(f"\r{Fore.CYAN}[📤] Sending web report {i}/{count}...", end='')
             success, msg = self.send_report(target, user_id, report_type, body)
             
             if success:
                 successful += 1
-                print(f"{Fore.GREEN}[✅] Web report {i}/{count} successful")
+                print(f"\r{Fore.GREEN}[✅] Web report {i}/{count} successful    ")
             else:
                 failed += 1
-                print(f"{Fore.RED}[❌] Web report {i}/{count} failed")
+                print(f"\r{Fore.RED}[❌] Web report {i}/{count} failed        ")
             
-            time.sleep(random.uniform(6, 12))
+            delay = random.uniform(6, 15)
+            time.sleep(delay)
         
         print(f"\n{Fore.GREEN}[📊] Web reports: {successful} successful, {failed} failed")
         return successful, failed
 
 # ============================================================================
-# MAIN TOOL
+# MAIN TOOL - WITH BETTER DESIGN
 # ============================================================================
 
 class ZiskyTGBanTool:
@@ -476,92 +566,251 @@ class ZiskyTGBanTool:
         self.https_manager = HttpsProxyManager("https.txt")
         self.email_bomber = EmailBomber(self.proxy_manager)
         self.web_reporter = WebReporter(self.https_manager)
+        self.start_time = datetime.now()
+    
+    def clear_screen(self):
+        os.system('clear' if os.name != 'nt' else 'cls')
     
     def print_banner(self):
-        os.system('clear' if os.name != 'nt' else 'cls')
-        print(f"""{Fore.RED}
-╔══════════════════════════════════════════════════════════════════════╗
-║     ███████╗██╗███████╗██╗  ██╗██╗   ██╗    ████████╗ ██████╗      ║
-║     ╚══███╔╝██║██╔════╝██║ ██╔╝██║   ██║    ╚══██╔══╝██╔═══██╗     ║
-║       ███╔╝ ██║███████╗█████╔╝ ██║   ██║       ██║   ██║   ██║     ║
-║      ███╔╝  ██║╚════██║██╔═██╗ ██║   ██║       ██║   ██║   ██║     ║
-║     ███████╗██║███████║██║  ██╗╚██████╔╝       ██║   ╚██████╔╝     ║
-║     ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝        ╚═╝    ╚═════╝      ║
-║                    🔥 ZISKY TG BAN TOOL v5.0 🔥                      ║
-║              📧 EMAIL: Proxies.txt • 🌐 WEB: https.txt               ║
-║                    ⚡ 80+ REPORT MESSAGES ⚡                         ║
-╚══════════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}
-        """)
+        banner = f"""
+{Fore.RED}╔══════════════════════════════════════════════════════════════════════════════╗
+{Fore.RED}║                                                                              ║
+{Fore.RED}║   ███████╗██╗███████╗██╗  ██╗██╗   ██╗    ████████╗ ██████╗     ██████╗ █████╗ ██╗   ██╗
+{Fore.YELLOW}║   ╚══███╔╝██║██╔════╝██║ ██╔╝██║   ██║    ╚══██╔══╝██╔═══██╗    ██╔══██╗██╔══██╗██║   ██║
+{Fore.GREEN}║     ███╔╝ ██║███████╗█████╔╝ ██║   ██║       ██║   ██║   ██║    ██████╔╝███████║██║   ██║
+{Fore.CYAN}║    ███╔╝  ██║╚════██║██╔═██╗ ██║   ██║       ██║   ██║   ██║    ██╔══██╗██╔══██║╚██╗ ██╔╝
+{Fore.MAGENTA}║   ███████╗██║███████║██║  ██╗╚██████╔╝       ██║   ╚██████╔╝    ██║  ██║██║  ██║ ╚████╔╝ 
+{Fore.RED}║   ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝        ╚═╝    ╚═════╝     ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  
+{Fore.RED}║                                                                              ║
+{Fore.YELLOW}║                    🔥 ZISKY TG BAN TOOL v5.0 - BLACKHAT EDITION 🔥          ║
+{Fore.GREEN}║              📧 EMAIL: Proxies.txt (SOCKS5) • 🌐 WEB: https.txt (HTTP)        ║
+{Fore.CYAN}║                    ⚡ 80+ PROFESSIONAL REPORT MESSAGES ⚡                       ║
+{Fore.CYAN}║                    ⚡ AUTO-PROXY TESTING ON LOAD ⚡                             ║
+{Fore.RED}║                                                                              ║
+{Fore.RED}╚══════════════════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}
+        """
+        print(banner)
+        
+        proxy_stats = self.proxy_manager.get_stats()
+        https_stats = self.https_manager.get_stats()
+        
+        print(f"\n{Fore.CYAN}[⚙️] SYSTEM STATUS:{Style.RESET_ALL}")
+        print(f"    {Fore.GREEN}📁 Proxies.txt (SOCKS5 Email): {proxy_stats['working']}/{proxy_stats['total']} working")
+        print(f"    {Fore.GREEN}🔒 https.txt (HTTP Web): {https_stats['working']}/{https_stats['total']} proxies")
+        print(f"    {Fore.GREEN}📧 Email accounts: {len(EMAIL_CREDENTIALS)}")
+        print(f"    {Fore.GREEN}📝 Report templates: {len(USER_REPORT_MESSAGES)} Users, {len(CHANNEL_REPORT_MESSAGES)} Channels, {len(GROUP_REPORT_MESSAGES)} Groups")
+        print(f"    {Fore.GREEN}⏰ Started at: {self.start_time.strftime('%H:%M:%S')}")
     
-    def run(self):
-        self.print_banner()
+    def show_menu(self):
+        print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════════════╗")
+        print(f"{Fore.CYAN}║                         MAIN MENU                                 ║")
+        print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
+        print(f"\n{Fore.GREEN}[1] {Fore.WHITE}🚀 Launch Mass Report Attack")
+        print(f"{Fore.GREEN}[2] {Fore.WHITE}🔌 Proxy Management & Testing")
+        print(f"{Fore.GREEN}[3] {Fore.WHITE}📊 View Statistics")
+        print(f"{Fore.GREEN}[4] {Fore.WHITE}📝 View Report Templates")
+        print(f"{Fore.GREEN}[5] {Fore.WHITE}❌ Exit")
+    
+    def attack_menu(self):
+        print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════════════╗")
+        print(f"{Fore.CYAN}║                      ATTACK CONFIGURATION                          ║")
+        print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
+        
+        target = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Target username (without @): {Fore.CYAN}").strip()
+        user_id = input(f"{Fore.YELLOW}[?] {Fore.WHITE}Target account ID (press Enter to skip): {Fore.CYAN}").strip() or "UNKNOWN"
+        
+        print(f"\n{Fore.GREEN}[!] Target Types:{Style.RESET_ALL}")
+        print(f"    {Fore.CYAN}[1] {Fore.WHITE}User Account")
+        print(f"    {Fore.CYAN}[2] {Fore.WHITE}Channel")
+        print(f"    {Fore.CYAN}[3] {Fore.WHITE}Group")
+        type_choice = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Select target type: {Fore.CYAN}").strip()
+        
+        type_map = {'1': 'user', '2': 'channel', '3': 'group'}
+        report_type = type_map.get(type_choice, 'user')
+        
+        if report_type == 'user':
+            messages = USER_REPORT_MESSAGES
+        elif report_type == 'channel':
+            messages = CHANNEL_REPORT_MESSAGES
+        else:
+            messages = GROUP_REPORT_MESSAGES
+        
+        print(f"\n{Fore.GREEN}[!] Attack Methods:{Style.RESET_ALL}")
+        print(f"    {Fore.CYAN}[1] {Fore.WHITE}Email Bombing (SOCKS5 Proxies)")
+        print(f"    {Fore.CYAN}[2] {Fore.WHITE}Web Reporting (HTTP Proxies)")
+        print(f"    {Fore.CYAN}[3] {Fore.WHITE}Combined Attack (Both)")
+        attack_choice = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Select attack method: {Fore.CYAN}").strip()
+        
+        print(f"\n{Fore.GREEN}[!] Proxy Options:{Style.RESET_ALL}")
+        print(f"    {Fore.CYAN}[1] {Fore.WHITE}Use Proxies (Recommended)")
+        print(f"    {Fore.CYAN}[2] {Fore.WHITE}Direct Connection (No Proxies)")
+        proxy_choice = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Select: {Fore.CYAN}").strip()
+        use_proxy = proxy_choice == '1'
+        
+        count = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Number of reports per method (Enter for 25): {Fore.CYAN}").strip()
+        count = int(count) if count.isdigit() else 25
+        
+        print(f"\n{Fore.RED}{'═'*70}")
+        print(f"{Fore.YELLOW}[⚠️] ATTACK SUMMARY")
+        print(f"{Fore.RED}{'═'*70}")
+        print(f"{Fore.CYAN}Target:{Fore.WHITE} @{target} (ID: {user_id})")
+        print(f"{Fore.CYAN}Type:{Fore.WHITE} {report_type.upper()}")
+        print(f"{Fore.CYAN}Method:{Fore.WHITE} {['Email', 'Web', 'Combined'][int(attack_choice)-1]}")
+        print(f"{Fore.CYAN}Proxies:{Fore.WHITE} {'Enabled' if use_proxy else 'Disabled'}")
+        print(f"{Fore.CYAN}Reports:{Fore.WHITE} {count}")
+        print(f"{Fore.RED}{'═'*70}")
+        
+        confirm = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Launch attack? (y/N): {Fore.CYAN}").strip().lower()
+        
+        if confirm != 'y':
+            print(f"{Fore.YELLOW}[⚠️] Attack cancelled")
+            return
+        
+        print(f"\n{Fore.RED}[🚀] ATTACK LAUNCHED AT {datetime.now().strftime('%H:%M:%S')}{Style.RESET_ALL}")
+        
+        if attack_choice == '1':
+            self.email_bomber.attack(target, user_id, report_type, messages, count, use_proxy)
+        elif attack_choice == '2':
+            self.web_reporter.attack(target, user_id, report_type, messages, count)
+        else:
+            email_count = count // 2
+            web_count = count - email_count
+            t = threading.Thread(target=self.email_bomber.attack, args=(target, user_id, report_type, messages, email_count, use_proxy))
+            t.start()
+            self.web_reporter.attack(target, user_id, report_type, messages, web_count)
+            t.join()
+        
+        print(f"\n{Fore.GREEN}[✅] Attack completed at {datetime.now().strftime('%H:%M:%S')}{Style.RESET_ALL}")
+        input(f"\n{Fore.YELLOW}[Press Enter to continue...]{Style.RESET_ALL}")
+    
+    def proxy_menu(self):
+        print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════════════╗")
+        print(f"{Fore.CYAN}║                    PROXY MANAGEMENT                               ║")
+        print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
         
         while True:
-            print(f"\n{Fore.CYAN}[1] Launch Attack")
-            print(f"[2] Proxy Management")
-            print(f"[3] Exit{Style.RESET_ALL}")
+            proxy_stats = self.proxy_manager.get_stats()
+            https_stats = self.https_manager.get_stats()
             
-            choice = input(f"\n{Fore.YELLOW}[?] Select: ").strip()
+            print(f"\n{Fore.GREEN}[!] Current Status:{Style.RESET_ALL}")
+            print(f"    {Fore.CYAN}📁 Proxies.txt (SOCKS5 Email):{Fore.WHITE} {proxy_stats['working']}/{proxy_stats['total']} working")
+            print(f"    {Fore.CYAN}🔒 https.txt (HTTP Web):{Fore.WHITE} {https_stats['working']}/{https_stats['total']} proxies")
+            
+            print(f"\n{Fore.GREEN}[!] Options:{Style.RESET_ALL}")
+            print(f"    {Fore.CYAN}[1] {Fore.WHITE}Retest all SOCKS5 proxies")
+            print(f"    {Fore.CYAN}[2] {Fore.WHITE}View working proxies")
+            print(f"    {Fore.CYAN}[3] {Fore.WHITE}Add new proxies")
+            print(f"    {Fore.CYAN}[4] {Fore.WHITE}Clear failed proxies")
+            print(f"    {Fore.CYAN}[5] {Fore.WHITE}Return to main menu")
+            
+            choice = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Select: {Fore.CYAN}").strip()
             
             if choice == '1':
-                target = input(f"{Fore.YELLOW}[?] Target username (without @): ").strip()
-                user_id = input(f"{Fore.YELLOW}[?] Target account ID (if known, press Enter to skip): ").strip() or "UNKNOWN"
-                
-                print(f"\n{Fore.GREEN}Target types:")
-                print(f"  [1] User Account")
-                print(f"  [2] Channel")
-                print(f"  [3] Group")
-                type_choice = input(f"{Fore.YELLOW}[?] Select: ").strip()
-                
-                type_map = {'1': 'user', '2': 'channel', '3': 'group'}
-                report_type = type_map.get(type_choice, 'user')
-                
-                if report_type == 'user':
-                    messages = USER_REPORT_MESSAGES
-                elif report_type == 'channel':
-                    messages = CHANNEL_REPORT_MESSAGES
-                else:
-                    messages = GROUP_REPORT_MESSAGES
-                
-                print(f"\n{Fore.GREEN}Attack methods:")
-                print(f"  [1] Email only")
-                print(f"  [2] Web only")
-                print(f"  [3] Combined")
-                attack_choice = input(f"{Fore.YELLOW}[?] Select: ").strip()
-                
-                print(f"\n{Fore.GREEN}Proxy options:")
-                print(f"  [1] Use proxies (recommended)")
-                print(f"  [2] No proxies (direct)")
-                proxy_choice = input(f"{Fore.YELLOW}[?] Select: ").strip()
-                use_proxy = proxy_choice == '1'
-                
-                count = input(f"{Fore.YELLOW}[?] Reports per method (Enter for 20): ").strip()
-                count = int(count) if count.isdigit() else 20
-                
-                print(f"\n{Fore.RED}[🚀] LAUNCHING ATTACK ON @{target} (ID: {user_id}){Style.RESET_ALL}")
-                
-                if attack_choice == '1':
-                    self.email_bomber.attack(target, user_id, report_type, messages, count, use_proxy)
-                elif attack_choice == '2':
-                    self.web_reporter.attack(target, user_id, report_type, messages, count)
-                else:
-                    t = threading.Thread(target=self.email_bomber.attack, args=(target, user_id, report_type, messages, count//2, use_proxy))
-                    t.start()
-                    self.web_reporter.attack(target, user_id, report_type, messages, count//2)
-                    t.join()
-            
+                self.proxy_manager.test_all_proxies()
             elif choice == '2':
-                print(f"\n{Fore.CYAN}Proxies.txt: {self.proxy_manager.get_stats()['working']} working")
-                print(f"https.txt: {self.https_manager.working_proxies.__len__()} working{Style.RESET_ALL}")
+                print(f"\n{Fore.GREEN}[!] Working SOCKS5 Proxies:{Style.RESET_ALL}")
+                for i, p in enumerate(self.proxy_manager.working_proxies[:20], 1):
+                    print(f"    {Fore.CYAN}{i}. {Fore.WHITE}{p}")
+                if len(self.proxy_manager.working_proxies) > 20:
+                    print(f"    {Fore.YELLOW}... and {len(self.proxy_manager.working_proxies)-20} more")
                 input(f"\n{Fore.YELLOW}[Press Enter...]")
-            
             elif choice == '3':
-                print(f"{Fore.GREEN}[👋] Stay dangerous.{Style.RESET_ALL}")
+                new_proxies = input(f"{Fore.YELLOW}[?] {Fore.WHITE}Enter proxies (one per line, press Enter twice to finish):\n{Fore.CYAN}").strip()
+                if new_proxies:
+                    for p in new_proxies.split('\n'):
+                        if p.strip():
+                            self.proxy_manager.proxies.append(p.strip())
+                    self.proxy_manager.test_all_proxies()
+            elif choice == '4':
+                self.proxy_manager.working_proxies = []
+                self.proxy_manager.failed_proxies = []
+                self.proxy_manager.save_proxies()
+                print(f"{Fore.GREEN}[✅] Cleared failed proxies")
+            elif choice == '5':
                 break
+    
+    def stats_menu(self):
+        print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════════════╗")
+        print(f"{Fore.CYAN}║                      STATISTICS                                   ║")
+        print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
+        
+        proxy_stats = self.proxy_manager.get_stats()
+        https_stats = self.https_manager.get_stats()
+        
+        print(f"\n{Fore.GREEN}[!] Proxy Statistics:{Style.RESET_ALL}")
+        print(f"    {Fore.CYAN}📁 Proxies.txt:{Fore.WHITE}")
+        print(f"        Total loaded: {proxy_stats['total']}")
+        print(f"        Working: {proxy_stats['working']}")
+        print(f"        Failed: {proxy_stats['failed']}")
+        print(f"    {Fore.CYAN}🔒 https.txt:{Fore.WHITE}")
+        print(f"        Total loaded: {https_stats['total']}")
+        print(f"        Available: {https_stats['working']}")
+        
+        print(f"\n{Fore.GREEN}[!] Email Statistics:{Style.RESET_ALL}")
+        print(f"    {Fore.CYAN}📧 Email accounts:{Fore.WHITE} {len(EMAIL_CREDENTIALS)}")
+        print(f"    {Fore.CYAN}✉️ Abuse emails:{Fore.WHITE} {len(TELEGRAM_ABUSE_EMAILS)}")
+        
+        print(f"\n{Fore.GREEN}[!] Report Templates:{Style.RESET_ALL}")
+        print(f"    {Fore.CYAN}👤 User reports:{Fore.WHITE} {len(USER_REPORT_MESSAGES)}")
+        print(f"    {Fore.CYAN}📢 Channel reports:{Fore.WHITE} {len(CHANNEL_REPORT_MESSAGES)}")
+        print(f"    {Fore.CYAN}👥 Group reports:{Fore.WHITE} {len(GROUP_REPORT_MESSAGES)}")
+        
+        input(f"\n{Fore.YELLOW}[Press Enter to continue...]{Style.RESET_ALL}")
+    
+    def templates_menu(self):
+        print(f"\n{Fore.CYAN}╔══════════════════════════════════════════════════════════════════╗")
+        print(f"{Fore.CYAN}║                   REPORT TEMPLATES PREVIEW                        ║")
+        print(f"{Fore.CYAN}╚══════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
+        
+        print(f"\n{Fore.GREEN}[!] User Report Templates (sample):{Style.RESET_ALL}")
+        for i, msg in enumerate(USER_REPORT_MESSAGES[:3], 1):
+            preview = msg[:150].replace('{username}', '@target').replace('{user_id}', '123456789')
+            print(f"\n    {Fore.CYAN}{i}.{Fore.WHITE} {preview}...")
+        
+        print(f"\n{Fore.GREEN}[!] Channel Report Templates (sample):{Style.RESET_ALL}")
+        for i, msg in enumerate(CHANNEL_REPORT_MESSAGES[:2], 1):
+            preview = msg[:150].replace('{username}', '@channel').replace('{user_id}', '987654321')
+            print(f"\n    {Fore.CYAN}{i}.{Fore.WHITE} {preview}...")
+        
+        input(f"\n{Fore.YELLOW}[Press Enter to continue...]{Style.RESET_ALL}")
+    
+    def run(self):
+        while True:
+            self.clear_screen()
+            self.print_banner()
+            self.show_menu()
+            
+            choice = input(f"\n{Fore.YELLOW}[?] {Fore.WHITE}Select option: {Fore.CYAN}").strip()
+            
+            if choice == '1':
+                self.attack_menu()
+            elif choice == '2':
+                self.proxy_menu()
+            elif choice == '3':
+                self.stats_menu()
+            elif choice == '4':
+                self.templates_menu()
+            elif choice == '5':
+                print(f"\n{Fore.GREEN}[👋] Thanks for using Zisky TG Ban Tool!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}[🔒] Stay anonymous, stay dangerous.{Style.RESET_ALL}")
+                sys.exit(0)
+            else:
+                print(f"{Fore.RED}[❌] Invalid option{Style.RESET_ALL}")
+                time.sleep(1)
+
+# ============================================================================
+# MAIN
+# ============================================================================
 
 if __name__ == "__main__":
     try:
         tool = ZiskyTGBanTool()
         tool.run()
     except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}[⚠️] Interrupted")
+        print(f"\n{Fore.YELLOW}[⚠️] Interrupted by user{Style.RESET_ALL}")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n{Fore.RED}[💥] Error: {e}{Style.RESET_ALL}")
+        import traceback
+        traceback.print_exc()
+        input(f"\n{Fore.YELLOW}[Press Enter to exit...]{Style.RESET_ALL}")
