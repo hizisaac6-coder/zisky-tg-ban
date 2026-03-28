@@ -53,7 +53,7 @@ cd zisky-tg-ban
 pip install requests colorama pysocks urllib3
 
 # Run the tool
-python zisky.py
+python main.py
 📁 PROXY FILES SETUP
 1. Proxies.txt (For Email Bombing - SOCKS5 format)
 bash
@@ -94,7 +94,7 @@ Whenever you want to get the latest version:
 bash
 cd ~/zisky-tg-ban
 git pull origin main
-python zisky.py
+python main.py
 That's it! Your tool will be updated to the latest version.
 
 📊 PROXY MANAGEMENT
