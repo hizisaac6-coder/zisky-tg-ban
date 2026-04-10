@@ -47,8 +47,8 @@ pkg install git python clang libffi openssl -y
 
 # Clone repository
 git clone https://github.com/hizisaac6-coder/zisky-tg-ban.git
-cd zisky-tg-ban
-
+cd ~/zisky-tg-ban
+git pull origin main
 # Install Python packages
 pip install requests colorama pysocks urllib3
 
